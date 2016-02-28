@@ -20,12 +20,12 @@ import java.util.List;
 
 import javax.sql.rowset.WebRowSet;
 
-public class WebcoursesGitClone 
+public class SheetGitClone 
 {
 	private String src;
 	private String dest;
 	
-	public WebcoursesGitClone(String src, String dest)
+	public SheetGitClone(String src, String dest)
 	{
 		this.src = src;
 		this.dest = dest;
@@ -35,79 +35,42 @@ public class WebcoursesGitClone
 	{
 		if (args.length != 2)
 		{
-			System.out.println("Usage: java ie.dit.WebcoursesGitClone SOURCE_PATH DESTINATION_PATH");
+			System.out.println("Usage: java ie.dit.WebcoursesGitClone CSV_FILE DESTINATION_PATH");
 			return;
 		}
 		
-		WebcoursesGitClone wgc = new WebcoursesGitClone(args[0], args[1]);
+		SheetGitClone wgc = new SheetGitClone(args[0], args[1]);
 		
-		wgc.doWork();
+		wgc.processFile(new File(args[0]));
 		
-	}
-
-	private void doWork()
-	{
-		File[] files = new File(src).listFiles(new FileFilter()
-		{
-			public boolean accept(File f)
-			{
-				return (f.getName().toLowerCase().endsWith(".txt"));
-			}
-		});
-		if (files == null)
-		{
-			System.out.println("No files found");
-			return;
-		}
-		for (File file : files) 
-		{
-		    if (file.isFile()) 
-		    {
-		        processFile(file);
-		    }
-		}				
 	}
 
 	private void processFile(File file)
 	{
-		String studentNumber = "";
-		String studentName = "";
-		String url = "";
+		Submission sub = new Submission();
 		try
 		{
-			int start_ = file.getName().indexOf("_");
-			int end_ = file.getName().indexOf("_", start_ + 1);
-			studentNumber = file.getName().substring(start_ + 1, end_);
 			String current;
 			
 			BufferedReader reader = new BufferedReader(new FileReader(file));
+			boolean first = true;
 			
 			while ((current = reader.readLine()) != null) 
 			{
-				if (current.contains("Name: "))
+				if (first)
 				{
-					int i = current.indexOf("(");
-					studentName = current.substring(6, i - 1);
+					first = false;
+					continue;					
 				}
-				if (current.contains("http"))
-				{
-					current = current.replaceAll("\\<[^>]*>","");
-					int i = current.indexOf("http");
-					url = current.substring(i, current.length());
-					System.out.println(studentNumber + "\t" + current);
-					cloneRepo(studentNumber, studentName, url);
-					break;
-				}
+				sub = new Submission(current);				
+				cloneRepo(sub.number, sub.name, sub.gitLink);				
 			}
 			reader.close();
-			studentNumber = "";
-			studentName = "";
-			url = "";
+			System.out.println("Done!");
 		} 
 		catch (Exception e)
 		{
-			System.out.println("Error cloning:  " + url + " Student: " + studentNumber + " Name: " + studentName);
-			// TODO Auto-generated catch block
+			System.out.println("Error cloning:  " + sub.gitLink + " Student: " + sub.number + " Name: " + sub.name);			
 			e.printStackTrace();
 		}
 		
