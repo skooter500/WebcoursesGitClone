@@ -80,7 +80,9 @@ public class SheetGitClone
 	{
 		int i = url.lastIndexOf("/");
 		String projectName = url.substring(i + 1, url.length());
-		String destPath = dest + "\\" + studentNumber + " " + studentName + "\\" + projectName;
+		//String destPath = dest + "\\" + studentNumber + " " + studentName + "\\" + projectName;
+		String destPath = dest + "\\" + studentName;
+		destPath = destPath.trim();
 		String[] cmd = {
 				"git"
 				, "clone"
